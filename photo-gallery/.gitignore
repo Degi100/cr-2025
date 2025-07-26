@@ -28,3 +28,11 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Large image files (uncomment if repository gets too big)
+# public/bilder/
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.webp
