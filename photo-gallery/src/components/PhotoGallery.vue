@@ -2,62 +2,138 @@
 import { ref, computed } from 'vue'
 import PhotoCard from './PhotoCard.vue'
 import Lightbox from './Lightbox.vue'
+import PhotoUploader from './PhotoUploader.vue'
 
-// Sample Urlaubsbilder - in einer echten App würden diese von einer API kommen
+// Costa Rica Urlaubsbilder - organisiert nach Reisephasen
 const photos = ref([
+  // Hinflug & Anreise
   {
     id: 1,
-    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
-    thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80',
-    title: 'Strand am ersten Tag',
-    description: 'Wunderschöner Sonnenuntergang am Strand. Das Wasser war so klar und warm!',
+    url: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&q=80',
+    title: 'Abflug nach Costa Rica',
+    description: 'Der Beginn unseres großen Abenteuers! Vom Flugzeugfenster aus sehen wir Deutschland zum letzten Mal.',
     date: '2025-07-15',
-    location: 'Malediven'
+    location: 'Hinflug',
+    category: 'anreise'
   },
   {
     id: 2,
-    url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80',
-    thumbnail: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80',
-    title: 'Palmen und Paradies',
-    description: 'Diese Palmen haben uns jeden Morgen begrüßt. Einfach traumhaft!',
-    date: '2025-07-16',
-    location: 'Malediven'
+    url: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&q=80',
+    title: 'Über den Wolken',
+    description: 'Stundenlang über den Atlantik - die Vorfreude steigt mit jedem Kilometer!',
+    date: '2025-07-15',
+    location: 'Hinflug',
+    category: 'anreise'
   },
+  
+  // Erste Ankunft in Escazú
   {
     id: 3,
-    url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
-    thumbnail: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&q=80',
-    title: 'Schnorchel-Abenteuer',
-    description: 'Die Unterwasserwelt war atemberaubend. So viele bunte Fische!',
-    date: '2025-07-17',
-    location: 'Malediven'
+    url: 'https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=400&q=80',
+    title: 'Willkommen in San José',
+    description: 'Erste Eindrücke am Flughafen - die tropische Luft und das Gefühl von Abenteuer!',
+    date: '2025-07-16',
+    location: 'San José',
+    category: 'ankunft'
   },
   {
     id: 4,
-    url: 'https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?w=800&q=80',
-    thumbnail: 'https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?w=400&q=80',
-    title: 'Cocktails bei Sonnenuntergang',
-    description: 'Entspannung pur mit einem kühlen Getränk und dem besten Ausblick der Welt.',
-    date: '2025-07-18',
-    location: 'Malediven'
+    url: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=400&q=80',
+    title: 'Fahrt nach Escazú',
+    description: 'Die Berge von Costa Rica begrüßen uns - so grün und majestätisch!',
+    date: '2025-07-16',
+    location: 'Escazú',
+    category: 'ankunft'
   },
   {
     id: 5,
-    url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80',
-    thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',
-    title: 'Wasserbungalow',
-    description: 'Unser Zuhause für eine Woche. Direkt über dem türkisblauen Wasser!',
-    date: '2025-07-19',
-    location: 'Malediven'
+    url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80',
+    title: 'Unser Hotel in Escazú',
+    description: 'Eingecheckt! Die Aussicht auf die Berge ist atemberaubend. Pura Vida beginnt jetzt!',
+    date: '2025-07-16',
+    location: 'Escazú',
+    category: 'ankunft'
   },
+  
+  // Lokale Erkundungen
   {
     id: 6,
+    url: 'https://images.unsplash.com/photo-1552830869-6f6ac85e5ba9?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1552830869-6f6ac85e5ba9?w=400&q=80',
+    title: 'Markt in Escazú',
+    description: 'Lokale Früchte probieren - so viele exotische Geschmäcker, die wir noch nie erlebt haben!',
+    date: '2025-07-17',
+    location: 'Escazú',
+    category: 'erkundung'
+  },
+  {
+    id: 7,
+    url: 'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=400&q=80',
+    title: 'Erstes Gallo Pinto',
+    description: 'Das Nationalgericht Costa Ricas zum Frühstück - einfach köstlich!',
+    date: '2025-07-17',
+    location: 'Escazú',
+    category: 'kulinarik'
+  },
+  
+  // Abenteuer & Natur
+  {
+    id: 8,
+    url: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73c6e?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73c6e?w=400&q=80',
+    title: 'Regenwald-Wanderung',
+    description: 'Tief im costaricanischen Regenwald - die Artenvielfalt ist unglaublich!',
+    date: '2025-07-18',
+    location: 'Manuel Antonio',
+    category: 'natur'
+  },
+  {
+    id: 9,
+    url: 'https://images.unsplash.com/photo-1575550959106-5a7defe28b56?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1575550959106-5a7defe28b56?w=400&q=80',
+    title: 'Faultier-Begegnung',
+    description: 'Unser erstes Faultier in freier Wildbahn! So friedlich und entspannt - echte Pura Vida!',
+    date: '2025-07-18',
+    location: 'Manuel Antonio',
+    category: 'tierwelt'
+  },
+  {
+    id: 10,
+    url: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&q=80',
+    title: 'Zip-Line Abenteuer',
+    description: 'Durch die Baumkronen sausen - Adrenalin pur mit spektakulärer Aussicht!',
+    date: '2025-07-19',
+    location: 'Monteverde',
+    category: 'abenteuer'
+  },
+  
+  // Strände & Entspannung
+  {
+    id: 11,
     url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
     thumbnail: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&q=80',
-    title: 'Romantisches Dinner',
-    description: 'Ein unvergesslicher Abend zu zweit am Strand mit Kerzenschein.',
+    title: 'Sonnenuntergang in Tamarindo',
+    description: 'Der perfekte Strandtag endet mit diesem magischen Sonnenuntergang am Pazifik.',
     date: '2025-07-20',
-    location: 'Malediven'
+    location: 'Tamarindo',
+    category: 'strand'
+  },
+  {
+    id: 12,
+    url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80',
+    title: 'Palmen am Pazifik',
+    description: 'Traumhafte Palmen säumen die Küste - das ist das Costa Rica aus unseren Träumen!',
+    date: '2025-07-20',
+    location: 'Tamarindo',
+    category: 'strand'
   }
 ])
 
@@ -65,8 +141,12 @@ const photos = ref([
 const selectedPhoto = ref(null)
 const showLightbox = ref(false)
 
+// State für PhotoUploader
+const showUploader = ref(false)
+
 // Filter und Sortierung
 const selectedLocation = ref('all')
+const selectedCategory = ref('all')
 const sortBy = ref('date')
 
 // Eindeutige Locations für Filter
@@ -75,6 +155,26 @@ const locations = computed(() => {
   return ['all', ...locs]
 })
 
+// Eindeutige Kategorien für Filter
+const categories = computed(() => {
+  const cats = [...new Set(photos.value.map(photo => photo.category))]
+  return ['all', ...cats]
+})
+
+// Kategorie-Labels für bessere UX
+const categoryLabels = {
+  'all': 'Alle Kategorien',
+  'anreise': '✈️ Anreise',
+  'ankunft': '🏨 Ankunft',
+  'erkundung': '🗺️ Erkundung',
+  'kulinarik': '🍽️ Kulinarik',
+  'natur': '🌿 Natur',
+  'tierwelt': '🦥 Tierwelt',
+  'abenteuer': '🎢 Abenteuer',
+  'strand': '🏖️ Strand',
+  'nachtleben': '🎉 Party & Nachtleben'
+}
+
 // Gefilterte und sortierte Fotos
 const filteredPhotos = computed(() => {
   let filtered = photos.value
@@ -82,6 +182,11 @@ const filteredPhotos = computed(() => {
   // Nach Location filtern
   if (selectedLocation.value !== 'all') {
     filtered = filtered.filter(photo => photo.location === selectedLocation.value)
+  }
+
+  // Nach Kategorie filtern
+  if (selectedCategory.value !== 'all') {
+    filtered = filtered.filter(photo => photo.category === selectedCategory.value)
   }
 
   // Sortieren
@@ -113,12 +218,40 @@ const formatDate = (dateString) => {
     day: 'numeric'
   })
 }
+
+// PhotoUploader Funktionen
+const toggleUploader = () => {
+  showUploader.value = !showUploader.value
+}
+
+const addPhotos = (newPhotos) => {
+  // Neue Fotos zur bestehenden Liste hinzufügen
+  const maxId = Math.max(...photos.value.map(p => p.id), 0)
+  newPhotos.forEach((photo, index) => {
+    photo.id = maxId + index + 1
+    photos.value.push(photo)
+  })
+  
+  showUploader.value = false
+  
+  // Erfolgsbenachrichtigung
+  alert(`🎉 ${newPhotos.length} Foto${newPhotos.length !== 1 ? 's' : ''} erfolgreich hinzugefügt!`)
+}
 </script>
 
 <template>
   <div class="photo-gallery">
     <!-- Filter und Sortierung -->
     <div class="gallery-controls">
+      <div class="control-group">
+        <label for="category-filter">📂 Kategorie:</label>
+        <select id="category-filter" v-model="selectedCategory">
+          <option v-for="category in categories" :key="category" :value="category">
+            {{ categoryLabels[category] || category }}
+          </option>
+        </select>
+      </div>
+
       <div class="control-group">
         <label for="location-filter">📍 Ort:</label>
         <select id="location-filter" v-model="selectedLocation">
@@ -141,6 +274,87 @@ const formatDate = (dateString) => {
         📸 {{ filteredPhotos.length }} Foto{{ filteredPhotos.length !== 1 ? 's' : '' }}
       </div>
     </div>
+
+    <!-- Schnellfilter Buttons -->
+    <div class="quick-filters">
+      <div class="filter-header">
+        <h3>🚀 Schnellfilter:</h3>
+        <button 
+          class="upload-btn"
+          @click="toggleUploader"
+          :class="{ active: showUploader }"
+        >
+          {{ showUploader ? '❌ Upload schließen' : '➕ Bilder hinzufügen' }}
+        </button>
+      </div>
+      
+      <div class="filter-buttons">
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedCategory === 'all' }"
+          @click="selectedCategory = 'all'"
+        >
+          📸 Alle ({{ photos.length }})
+        </button>
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedCategory === 'anreise' }"
+          @click="selectedCategory = 'anreise'"
+        >
+          ✈️ Anreise ({{ photos.filter(p => p.category === 'anreise').length }})
+        </button>
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedCategory === 'strand' }"
+          @click="selectedCategory = 'strand'"
+        >
+          🏖️ Strand ({{ photos.filter(p => p.category === 'strand').length }})
+        </button>
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedCategory === 'tierwelt' }"
+          @click="selectedCategory = 'tierwelt'"
+        >
+          🦥 Tiere ({{ photos.filter(p => p.category === 'tierwelt').length }})
+        </button>
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedCategory === 'natur' }"
+          @click="selectedCategory = 'natur'"
+        >
+          🌿 Natur ({{ photos.filter(p => p.category === 'natur').length }})
+        </button>
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedLocation === 'Escazú' }"
+          @click="selectedLocation = 'Escazú'; selectedCategory = 'all'"
+        >
+          🏨 Escazú ({{ photos.filter(p => p.location === 'Escazú').length }})
+        </button>
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedCategory === 'kulinarik' }"
+          @click="selectedCategory = 'kulinarik'"
+        >
+          🍽️ Speisen ({{ photos.filter(p => p.category === 'kulinarik').length }})
+        </button>
+        <button 
+          class="filter-btn"
+          :class="{ active: selectedCategory === 'nachtleben' }"
+          @click="selectedCategory = 'nachtleben'"
+        >
+          🎉 Party ({{ photos.filter(p => p.category === 'nachtleben').length }})
+        </button>
+      </div>
+    </div>
+
+    <!-- PhotoUploader (konditionell angezeigt) -->
+    <transition name="slide-down">
+      <PhotoUploader 
+        v-if="showUploader"
+        @photos-added="addPhotos"
+      />
+    </transition>
 
     <!-- Foto Grid -->
     <div class="photos-grid">
@@ -218,6 +432,103 @@ const formatDate = (dateString) => {
   font-size: 0.9rem;
 }
 
+.quick-filters {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.quick-filters h3 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.upload-btn {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.upload-btn:hover {
+  background: linear-gradient(135deg, #218838, #1ea085);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.upload-btn.active {
+  background: linear-gradient(135deg, #dc3545, #e83e8c);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+/* Slide-Down Animation für PhotoUploader */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.5s ease;
+  max-height: 1000px;
+  opacity: 1;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.filter-btn {
+  padding: 0.75rem 1.25rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 25px;
+  background: white;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
 .photos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -238,6 +549,30 @@ const formatDate = (dateString) => {
   .photo-count {
     margin: 0;
     text-align: center;
+  }
+
+  .quick-filters {
+    padding: 1rem;
+  }
+
+  .filter-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .upload-btn {
+    font-size: 0.8rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .filter-buttons {
+    justify-content: center;
+  }
+
+  .filter-btn {
+    font-size: 0.8rem;
+    padding: 0.6rem 1rem;
   }
 
   .photos-grid {

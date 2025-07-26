@@ -2,14 +2,14 @@
 import PhotoGallery from './components/PhotoGallery.vue'
 import { ref } from 'vue'
 
-const galleryTitle = ref('🏖️ Unser Traumurlaub 2025')
+const galleryTitle = ref('� Costa Rica Abenteuer 2025')
 </script>
 
 <template>
   <div id="app">
     <header class="app-header">
       <h1>{{ galleryTitle }}</h1>
-      <p class="subtitle">Eine Reise voller unvergesslicher Momente</p>
+      <p class="subtitle">Pura Vida - Eine unvergessliche Reise durch das Paradies</p>
     </header>
 
     <main class="main-content">
