@@ -5,8 +5,8 @@
   publish = "dist"
 
 [build.environment]
-  # Node.js Version
-  NODE_VERSION = "18"
+  # Node.js Version (für Vite 7 benötigt)
+  NODE_VERSION = "20"
 
 # SPA (Single Page Application) Routing
 [[redirects]]
