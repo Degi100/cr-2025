@@ -179,6 +179,17 @@ const categoryLabels = {
 const filteredPhotos = computed(() => {
   let filtered = photos.value
 
+  // Spezial-Filter: Neueste Bilder (letzte 7 Tage)
+  if (sortBy.value === 'newest') {
+    const oneWeekAgo = new Date()
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+    
+    filtered = filtered.filter(photo => {
+      const photoDate = new Date(photo.date)
+      return photoDate >= oneWeekAgo
+    })
+  }
+
   // Nach Location filtern
   if (selectedLocation.value !== 'all') {
     filtered = filtered.filter(photo => photo.location === selectedLocation.value)
@@ -191,7 +202,7 @@ const filteredPhotos = computed(() => {
 
   // Sortieren
   filtered.sort((a, b) => {
-    if (sortBy.value === 'date') {
+    if (sortBy.value === 'date' || sortBy.value === 'newest') {
       return new Date(b.date) - new Date(a.date)
     }
     return a.title.localeCompare(b.title)
@@ -236,6 +247,24 @@ const addPhotos = (newPhotos) => {
   
   // Erfolgsbenachrichtigung
   alert(`🎉 ${newPhotos.length} Foto${newPhotos.length !== 1 ? 's' : ''} erfolgreich hinzugefügt!`)
+}
+
+// Neueste Bilder Funktionen
+const sortByNewest = () => {
+  selectedCategory.value = 'all'
+  selectedLocation.value = 'all'
+  sortBy.value = 'newest'
+}
+
+const getNewestCount = () => {
+  // Zeige Bilder der letzten 7 Tage
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+  
+  return photos.value.filter(photo => {
+    const photoDate = new Date(photo.date)
+    return photoDate >= oneWeekAgo
+  }).length
 }
 </script>
 
@@ -290,9 +319,16 @@ const addPhotos = (newPhotos) => {
       
       <div class="filter-buttons">
         <button 
+          class="filter-btn newest"
+          :class="{ active: sortBy === 'newest' }"
+          @click="sortByNewest"
+        >
+          🆕 Neueste ({{ getNewestCount() }})
+        </button>
+        <button 
           class="filter-btn"
           :class="{ active: selectedCategory === 'all' }"
-          @click="selectedCategory = 'all'"
+          @click="selectedCategory = 'all'; sortBy = 'date'"
         >
           📸 Alle ({{ photos.length }})
         </button>
@@ -527,6 +563,24 @@ const addPhotos = (newPhotos) => {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.filter-btn.newest {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border-color: #4CAF50;
+  font-weight: 600;
+}
+
+.filter-btn.newest:hover {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  border-color: #45a049;
+}
+
+.filter-btn.newest.active {
+  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  border-color: #2E7D32;
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
 }
 
 .photos-grid {
