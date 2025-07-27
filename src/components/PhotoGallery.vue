@@ -297,6 +297,18 @@ const hasActiveFilters = computed(() => {
          selectedLocation.value !== 'all' ||
          sortBy.value === 'newest'
 })
+
+// Neue kompakte Filter-Funktionen
+const setCategory = (category) => {
+  selectedCategory.value = category
+  selectedLocation.value = 'all'
+  searchQuery.value = ''
+  sortBy.value = 'date'
+}
+
+const getCategoryCount = (category) => {
+  return photos.value.filter(p => p.category === category).length
+}
 </script>
 
 <template>
@@ -339,117 +351,118 @@ const hasActiveFilters = computed(() => {
       </div>
     </div>
 
-    <!-- Filter und Sortierung -->
-    <div class="gallery-controls">
-      <div class="control-group">
-        <label for="category-filter">📂 Kategorie:</label>
-        <select id="category-filter" v-model="selectedCategory">
-          <option v-for="category in categories" :key="category" :value="category">
-            {{ categoryLabels[category] || category }}
-          </option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="location-filter">📍 Ort:</label>
-        <select id="location-filter" v-model="selectedLocation">
-          <option value="all">Alle Orte</option>
-          <option v-for="location in locations.slice(1)" :key="location" :value="location">
-            {{ location }}
-          </option>
-        </select>
-      </div>
-      
-      <div class="control-group">
-        <label for="sort-select">🔄 Sortieren:</label>
-        <select id="sort-select" v-model="sortBy">
-          <option value="date">Nach Datum</option>
-          <option value="title">Nach Titel</option>
-        </select>
-      </div>
-
-      <div class="photo-count">
-        📸 {{ filteredPhotos.length }} Foto{{ filteredPhotos.length !== 1 ? 's' : '' }}
-      </div>
-    </div>
-
-    <!-- Schnellfilter Buttons -->
-    <div class="quick-filters">
+    <!-- Intelligente Filter-Kombination -->
+    <div class="smart-filters">
       <div class="filter-header">
-        <h3>🚀 Schnellfilter:</h3>
-        <button 
-          class="upload-btn"
-          @click="toggleUploader"
-          :class="{ active: showUploader }"
-        >
-          {{ showUploader ? '❌ Upload schließen' : '➕ Bilder hinzufügen' }}
-        </button>
+        <h3>🎯 Galerie Filter</h3>
+        <div class="filter-actions">
+          <button 
+            v-if="hasActiveFilters"
+            @click="clearAllFilters"
+            class="clear-all-btn"
+            title="Alle Filter zurücksetzen"
+          >
+            🔄 Zurücksetzen
+          </button>
+          <button 
+            class="upload-btn"
+            @click="toggleUploader"
+            :class="{ active: showUploader }"
+          >
+            {{ showUploader ? '❌ Upload schließen' : '➕ Bilder hinzufügen' }}
+          </button>
+        </div>
       </div>
-      
-      <div class="filter-buttons">
-        <button 
-          class="filter-btn newest"
-          :class="{ active: sortBy === 'newest' }"
-          @click="sortByNewest"
-        >
-          🆕 Neueste ({{ getNewestCount() }})
-        </button>
-        <button 
-          class="filter-btn all-photos"
-          :class="{ active: !hasActiveFilters }"
-          @click="clearAllFilters"
-        >
-          📸 Alle ({{ photos.length }})
-        </button>
-        <button 
-          class="filter-btn"
-          :class="{ active: selectedCategory === 'anreise' && !searchQuery }"
-          @click="selectedCategory = 'anreise'; searchQuery = ''"
-        >
-          ✈️ Anreise ({{ photos.filter(p => p.category === 'anreise').length }})
-        </button>
-        <button 
-          class="filter-btn"
-          :class="{ active: selectedCategory === 'strand' && !searchQuery }"
-          @click="selectedCategory = 'strand'; searchQuery = ''"
-        >
-          🏖️ Strand ({{ photos.filter(p => p.category === 'strand').length }})
-        </button>
-        <button 
-          class="filter-btn"
-          :class="{ active: selectedCategory === 'tierwelt' && !searchQuery }"
-          @click="selectedCategory = 'tierwelt'; searchQuery = ''"
-        >
-          🦥 Tiere ({{ photos.filter(p => p.category === 'tierwelt').length }})
-        </button>
-        <button 
-          class="filter-btn"
-          :class="{ active: selectedCategory === 'natur' && !searchQuery }"
-          @click="selectedCategory = 'natur'; searchQuery = ''"
-        >
-          🌿 Natur ({{ photos.filter(p => p.category === 'natur').length }})
-        </button>
-        <button 
-          class="filter-btn"
-          :class="{ active: selectedLocation === 'Escazú' && !searchQuery }"
-          @click="selectedLocation = 'Escazú'; selectedCategory = 'all'; searchQuery = ''"
-        >
-          🏨 Escazú ({{ photos.filter(p => p.location === 'Escazú').length }})
-        </button>
-        <button 
-          class="filter-btn"
-          :class="{ active: selectedCategory === 'kulinarik' && !searchQuery }"
-          @click="selectedCategory = 'kulinarik'; searchQuery = ''"
-        >
-          🍽️ Speisen ({{ photos.filter(p => p.category === 'kulinarik').length }})
-        </button>
-        <button 
-          class="filter-btn"
-          :class="{ active: selectedCategory === 'nachtleben' && !searchQuery }"
-          @click="selectedCategory = 'nachtleben'; searchQuery = ''"
-        >
-          🎉 Party ({{ photos.filter(p => p.category === 'nachtleben').length }})
-        </button>
+
+      <!-- Hauptfilter-Leiste -->
+      <div class="main-filters">
+        <!-- Kategorie Buttons (ersetzen sowohl Dropdown als auch Schnellfilter) -->
+        <div class="filter-group">
+          <label class="filter-label">📂 Kategorien:</label>
+          <div class="category-buttons">
+            <button 
+              class="category-btn all"
+              :class="{ active: !hasActiveFilters }"
+              @click="clearAllFilters"
+            >
+              📸 Alle <span class="count">({{ photos.length }})</span>
+            </button>
+            <button 
+              class="category-btn newest"
+              :class="{ active: sortBy === 'newest' }"
+              @click="sortByNewest"
+            >
+              🆕 Neueste <span class="count">({{ getNewestCount() }})</span>
+            </button>
+            <button 
+              class="category-btn"
+              :class="{ active: selectedCategory === 'anreise' && !searchQuery }"
+              @click="setCategory('anreise')"
+            >
+              ✈️ Anreise <span class="count">({{ getCategoryCount('anreise') }})</span>
+            </button>
+            <button 
+              class="category-btn"
+              :class="{ active: selectedCategory === 'strand' && !searchQuery }"
+              @click="setCategory('strand')"
+            >
+              🏖️ Strand <span class="count">({{ getCategoryCount('strand') }})</span>
+            </button>
+            <button 
+              class="category-btn"
+              :class="{ active: selectedCategory === 'tierwelt' && !searchQuery }"
+              @click="setCategory('tierwelt')"
+            >
+              🦥 Tiere <span class="count">({{ getCategoryCount('tierwelt') }})</span>
+            </button>
+            <button 
+              class="category-btn"
+              :class="{ active: selectedCategory === 'natur' && !searchQuery }"
+              @click="setCategory('natur')"
+            >
+              🌿 Natur <span class="count">({{ getCategoryCount('natur') }})</span>
+            </button>
+            <button 
+              class="category-btn"
+              :class="{ active: selectedCategory === 'kulinarik' && !searchQuery }"
+              @click="setCategory('kulinarik')"
+            >
+              �️ Speisen <span class="count">({{ getCategoryCount('kulinarik') }})</span>
+            </button>
+            <button 
+              class="category-btn"
+              :class="{ active: selectedCategory === 'abenteuer' && !searchQuery }"
+              @click="setCategory('abenteuer')"
+            >
+              � Abenteuer <span class="count">({{ getCategoryCount('abenteuer') }})</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ort & Sortierung (kompakt) -->
+        <div class="filter-group secondary">
+          <div class="compact-controls">
+            <div class="control-item">
+              <label>📍</label>
+              <select v-model="selectedLocation" class="compact-select">
+                <option value="all">Alle Orte</option>
+                <option v-for="location in locations.slice(1)" :key="location" :value="location">
+                  {{ location }}
+                </option>
+              </select>
+            </div>
+            <div class="control-item">
+              <label>🔄</label>
+              <select v-model="sortBy" class="compact-select">
+                <option value="date">Nach Datum</option>
+                <option value="title">Nach Titel</option>
+              </select>
+            </div>
+            <div class="result-count">
+              {{ filteredPhotos.length }} Foto{{ filteredPhotos.length !== 1 ? 's' : '' }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -772,6 +785,178 @@ const hasActiveFilters = computed(() => {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Smart Filter Kombination */
+.smart-filters {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.smart-filters .filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.smart-filters h3 {
+  color: #333;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.main-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-group.secondary {
+  border-top: 1px solid #e9ecef;
+  padding-top: 1rem;
+}
+
+.filter-label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.category-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.category-btn:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.category-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: #667eea;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.category-btn.newest {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border-color: #4CAF50;
+  font-weight: 600;
+}
+
+.category-btn.newest:hover {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  border-color: #45a049;
+}
+
+.category-btn.newest.active {
+  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  border-color: #2E7D32;
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+}
+
+.category-btn.all.active {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+  border-color: #6c757d;
+  color: white;
+}
+
+.category-btn .count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.category-btn.active .count {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.compact-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-item label {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.compact-select {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  min-width: 120px;
+}
+
+.compact-select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.result-count {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  margin-left: auto;
 }
 
 .photos-grid {
