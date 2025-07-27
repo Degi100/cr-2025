@@ -148,6 +148,7 @@ const showUploader = ref(false)
 const selectedLocation = ref('all')
 const selectedCategory = ref('all')
 const sortBy = ref('date')
+const searchQuery = ref('')
 
 // Eindeutige Locations für Filter
 const locations = computed(() => {
@@ -188,6 +189,17 @@ const filteredPhotos = computed(() => {
       const photoDate = new Date(photo.date)
       return photoDate >= oneWeekAgo
     })
+  }
+
+  // Suchfunktion - durchsucht Titel, Beschreibung und Location
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    filtered = filtered.filter(photo => 
+      photo.title.toLowerCase().includes(query) ||
+      photo.description.toLowerCase().includes(query) ||
+      photo.location.toLowerCase().includes(query) ||
+      photo.category.toLowerCase().includes(query)
+    )
   }
 
   // Nach Location filtern
@@ -266,10 +278,67 @@ const getNewestCount = () => {
     return photoDate >= oneWeekAgo
   }).length
 }
+
+// Suchfunktionen
+const clearSearch = () => {
+  searchQuery.value = ''
+}
+
+const clearAllFilters = () => {
+  searchQuery.value = ''
+  selectedCategory.value = 'all'
+  selectedLocation.value = 'all'
+  sortBy.value = 'date'
+}
+
+const hasActiveFilters = computed(() => {
+  return searchQuery.value.trim() !== '' || 
+         selectedCategory.value !== 'all' || 
+         selectedLocation.value !== 'all' ||
+         sortBy.value === 'newest'
+})
 </script>
 
 <template>
   <div class="photo-gallery">
+    <!-- Suchleiste -->
+    <div class="search-section">
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            v-model="searchQuery"
+            placeholder="Suche nach Titel, Beschreibung, Ort oder Kategorie..."
+            class="search-input"
+          />
+          <button 
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="clear-search-btn"
+            title="Suche löschen"
+          >
+            ❌
+          </button>
+        </div>
+        
+        <button 
+          v-if="hasActiveFilters"
+          @click="clearAllFilters"
+          class="clear-all-btn"
+          title="Alle Filter zurücksetzen"
+        >
+          🔄 Filter zurücksetzen
+        </button>
+      </div>
+      
+      <!-- Suchergebnisse Info -->
+      <div v-if="searchQuery.trim()" class="search-results-info">
+        <span class="search-query">Suche nach: "<strong>{{ searchQuery }}</strong>"</span>
+        <span class="search-count">{{ filteredPhotos.length }} Ergebnis{{ filteredPhotos.length !== 1 ? 'se' : '' }}</span>
+      </div>
+    </div>
+
     <!-- Filter und Sortierung -->
     <div class="gallery-controls">
       <div class="control-group">
@@ -326,58 +395,58 @@ const getNewestCount = () => {
           🆕 Neueste ({{ getNewestCount() }})
         </button>
         <button 
-          class="filter-btn"
-          :class="{ active: selectedCategory === 'all' }"
-          @click="selectedCategory = 'all'; sortBy = 'date'"
+          class="filter-btn all-photos"
+          :class="{ active: !hasActiveFilters }"
+          @click="clearAllFilters"
         >
           📸 Alle ({{ photos.length }})
         </button>
         <button 
           class="filter-btn"
-          :class="{ active: selectedCategory === 'anreise' }"
-          @click="selectedCategory = 'anreise'"
+          :class="{ active: selectedCategory === 'anreise' && !searchQuery }"
+          @click="selectedCategory = 'anreise'; searchQuery = ''"
         >
           ✈️ Anreise ({{ photos.filter(p => p.category === 'anreise').length }})
         </button>
         <button 
           class="filter-btn"
-          :class="{ active: selectedCategory === 'strand' }"
-          @click="selectedCategory = 'strand'"
+          :class="{ active: selectedCategory === 'strand' && !searchQuery }"
+          @click="selectedCategory = 'strand'; searchQuery = ''"
         >
           🏖️ Strand ({{ photos.filter(p => p.category === 'strand').length }})
         </button>
         <button 
           class="filter-btn"
-          :class="{ active: selectedCategory === 'tierwelt' }"
-          @click="selectedCategory = 'tierwelt'"
+          :class="{ active: selectedCategory === 'tierwelt' && !searchQuery }"
+          @click="selectedCategory = 'tierwelt'; searchQuery = ''"
         >
           🦥 Tiere ({{ photos.filter(p => p.category === 'tierwelt').length }})
         </button>
         <button 
           class="filter-btn"
-          :class="{ active: selectedCategory === 'natur' }"
-          @click="selectedCategory = 'natur'"
+          :class="{ active: selectedCategory === 'natur' && !searchQuery }"
+          @click="selectedCategory = 'natur'; searchQuery = ''"
         >
           🌿 Natur ({{ photos.filter(p => p.category === 'natur').length }})
         </button>
         <button 
           class="filter-btn"
-          :class="{ active: selectedLocation === 'Escazú' }"
-          @click="selectedLocation = 'Escazú'; selectedCategory = 'all'"
+          :class="{ active: selectedLocation === 'Escazú' && !searchQuery }"
+          @click="selectedLocation = 'Escazú'; selectedCategory = 'all'; searchQuery = ''"
         >
           🏨 Escazú ({{ photos.filter(p => p.location === 'Escazú').length }})
         </button>
         <button 
           class="filter-btn"
-          :class="{ active: selectedCategory === 'kulinarik' }"
-          @click="selectedCategory = 'kulinarik'"
+          :class="{ active: selectedCategory === 'kulinarik' && !searchQuery }"
+          @click="selectedCategory = 'kulinarik'; searchQuery = ''"
         >
           🍽️ Speisen ({{ photos.filter(p => p.category === 'kulinarik').length }})
         </button>
         <button 
           class="filter-btn"
-          :class="{ active: selectedCategory === 'nachtleben' }"
-          @click="selectedCategory = 'nachtleben'"
+          :class="{ active: selectedCategory === 'nachtleben' && !searchQuery }"
+          @click="selectedCategory = 'nachtleben'; searchQuery = ''"
         >
           🎉 Party ({{ photos.filter(p => p.category === 'nachtleben').length }})
         </button>
@@ -417,6 +486,120 @@ const getNewestCount = () => {
 .photo-gallery {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Suchsektion */
+.search-section {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  font-size: 1.2rem;
+  color: #666;
+  z-index: 2;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 25px;
+  font-size: 1rem;
+  background: white;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.clear-search-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.clear-all-btn {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.clear-all-btn:hover {
+  background: linear-gradient(135deg, #5a6268, #495057);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+.search-results-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.search-query {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.search-count {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .gallery-controls {
@@ -583,6 +766,14 @@ const getNewestCount = () => {
   box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
 }
 
+.filter-btn.all-photos.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
 .photos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -591,6 +782,41 @@ const getNewestCount = () => {
 }
 
 @media (max-width: 768px) {
+  .search-section {
+    padding: 1rem;
+  }
+
+  .search-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input-wrapper {
+    min-width: auto;
+  }
+
+  .search-input {
+    padding: 0.8rem 0.8rem 0.8rem 2.5rem;
+    font-size: 0.9rem;
+  }
+
+  .search-icon {
+    left: 12px;
+    font-size: 1rem;
+  }
+
+  .clear-all-btn {
+    font-size: 0.8rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .search-results-info {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
   .gallery-controls {
     flex-direction: column;
     align-items: stretch;
