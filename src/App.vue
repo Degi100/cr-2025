@@ -2,7 +2,7 @@
 import PhotoGallery from './components/PhotoGallery.vue'
 import { ref } from 'vue'
 
-const galleryTitle = ref('� Costa Rica Abenteuer 2025')
+const galleryTitle = ref('🌴 Costa Rica Abenteuer 2025')
 </script>
 
 <template>
