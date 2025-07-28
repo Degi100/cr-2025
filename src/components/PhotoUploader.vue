@@ -206,10 +206,25 @@ const addPhotosToGallery = () => {
       title: p.title, 
       category: p.category, 
       location: p.location,
-      permanent: p.permanent 
+      permanent: p.permanent,
+      url: p.url,
+      githubUrl: p.githubUrl 
     })))
     
-    emit('photos-added', [...newPhotos.value])
+    // Sicherstellen, dass für permanente Bilder die korrekte URL verwendet wird
+    const photosToAdd = newPhotos.value.map(photo => {
+      // Wenn das Bild permanent ist (GitHub), verwenden wir immer die GitHub URL
+      if (photo.permanent && photo.githubUrl) {
+        return {
+          ...photo,
+          url: photo.githubUrl,
+          thumbnail: photo.githubUrl // Thumbnail ebenfalls aktualisieren
+        }
+      }
+      return photo
+    })
+    
+    emit('photos-added', photosToAdd)
     
     newPhotos.value = []
     unknownLocationPhotos.value = []
