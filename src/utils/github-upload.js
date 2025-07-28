@@ -169,10 +169,8 @@ export class GitHubUploadService {
    * Permanente URL für hochgeladenes Bild generieren
    */
   static getPhotoUrl(fileName) {
-    // Absolute URL für GitHub-gehostete Bilder verwenden
-    // Dies sorgt dafür, dass Bilder nach dem Aktualisieren bestehen bleiben
-    const baseUrl = window.location.origin
-    return `${baseUrl}/uploads/${fileName}`
+    // Netlify URL mit CDN - Diese Version hat funktioniert
+    return `https://cr-2025.netlify.app/uploads/${fileName}`
   }
   
   /**
