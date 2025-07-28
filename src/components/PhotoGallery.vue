@@ -5,7 +5,41 @@ import Lightbox from './Lightbox.vue'
 import PhotoUploader from './PhotoUploader.vue'
 
 // Costa Rica Urlaubsbilder - organisiert nach Reisephasen
-const photos = ref([
+const photos = ref([])
+
+// LocalStorage Funktionen für persistente Speicherung
+const loadPhotosFromStorage = () => {
+  try {
+    const savedPhotos = localStorage.getItem('costa-rica-photos')
+    if (savedPhotos) {
+      const parsedPhotos = JSON.parse(savedPhotos)
+      photos.value = parsedPhotos
+      console.log(`📦 ${parsedPhotos.length} Fotos aus dem Speicher geladen`)
+    } else {
+      // Fallback zu Standard-Fotos wenn noch keine gespeichert
+      photos.value = getDefaultPhotos()
+      savePhotosToStorage()
+    }
+  } catch (error) {
+    console.error('❌ Fehler beim Laden der Fotos:', error)
+    photos.value = getDefaultPhotos()
+  }
+}
+
+const savePhotosToStorage = () => {
+  try {
+    localStorage.setItem('costa-rica-photos', JSON.stringify(photos.value))
+    console.log(`💾 ${photos.value.length} Fotos gespeichert`)
+  } catch (error) {
+    console.error('❌ Fehler beim Speichern:', error)
+    // Fallback: Zeige Warnung wenn localStorage voll ist
+    if (error.name === 'QuotaExceededError') {
+      alert('⚠️ Speicher voll! Bitte lösche alte Fotos oder nutze einen anderen Browser.')
+    }
+  }
+}
+
+const getDefaultPhotos = () => [
   // Hinflug & Anreise
   {
     id: 1,
@@ -135,7 +169,10 @@ const photos = ref([
     location: 'Tamarindo',
     category: 'strand'
   }
-])
+]
+
+// Initialisierung beim Laden der Komponente
+loadPhotosFromStorage()
 
 // State für Lightbox
 const selectedPhoto = ref(null)
@@ -255,10 +292,13 @@ const addPhotos = (newPhotos) => {
     photos.value.push(photo)
   })
   
+  // Sofort speichern nach dem Hinzufügen
+  savePhotosToStorage()
+  
   showUploader.value = false
   
-  // Erfolgsbenachrichtigung
-  alert(`🎉 ${newPhotos.length} Foto${newPhotos.length !== 1 ? 's' : ''} erfolgreich hinzugefügt!`)
+  // Erfolgsbenachrichtigung mit Speicher-Info
+  alert(`🎉 ${newPhotos.length} Foto${newPhotos.length !== 1 ? 's' : ''} erfolgreich hinzugefügt und gespeichert! 💾`)
 }
 
 // Neueste Bilder Funktionen
@@ -309,6 +349,48 @@ const setCategory = (category) => {
 const getCategoryCount = (category) => {
   return photos.value.filter(p => p.category === category).length
 }
+
+// Zusätzliche Speicher-Management Funktionen
+const resetToDefaults = () => {
+  if (confirm('🔄 Alle Fotos löschen und zu Standard-Galerie zurückkehren?')) {
+    photos.value = getDefaultPhotos()
+    savePhotosToStorage()
+    alert('✅ Galerie wurde zurückgesetzt!')
+  }
+}
+
+const exportBackup = () => {
+  try {
+    const dataStr = JSON.stringify(photos.value, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `costa-rica-photos-backup-${new Date().toISOString().split('T')[0]}.json`
+    link.click()
+    
+    URL.revokeObjectURL(url)
+    alert('📦 Backup erfolgreich heruntergeladen!')
+  } catch (error) {
+    console.error('❌ Export-Fehler:', error)
+    alert('❌ Fehler beim Export!')
+  }
+}
+
+const getStorageInfo = () => {
+  try {
+    const used = JSON.stringify(photos.value).length
+    const usedKB = Math.round(used / 1024)
+    return {
+      photoCount: photos.value.length,
+      storageUsed: usedKB,
+      storageLimit: 5120 // ca. 5MB localStorage Limit
+    }
+  } catch {
+    return { photoCount: 0, storageUsed: 0, storageLimit: 5120 }
+  }
+}
 </script>
 
 <template>
@@ -356,6 +438,23 @@ const getCategoryCount = (category) => {
       <div class="filter-header">
         <h3>🎯 Galerie Filter</h3>
         <div class="filter-actions">
+          <div class="storage-info">
+            <span class="storage-count">💾 {{ getStorageInfo().photoCount }} Fotos gespeichert</span>
+            <button 
+              @click="exportBackup" 
+              class="backup-btn"
+              title="Backup herunterladen"
+            >
+              📦 Backup
+            </button>
+            <button 
+              @click="resetToDefaults" 
+              class="reset-btn"
+              title="Zur Standard-Galerie zurückkehren"
+            >
+              🔄 Reset
+            </button>
+          </div>
           <button 
             v-if="hasActiveFilters"
             @click="clearAllFilters"
@@ -816,6 +915,64 @@ const getCategoryCount = (category) => {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.storage-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.storage-count {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  padding: 0.5rem 1rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.backup-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+.backup-btn:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+}
+
+.reset-btn {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  color: #212529;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.reset-btn:hover {
+  background: linear-gradient(135deg, #e0a800, #d39e00);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
 }
 
 .main-filters {

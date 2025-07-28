@@ -6,13 +6,73 @@ Eine moderne, responsive Bildergalerie erstellt mit Vue.js 3 und Vite. Perfekt u
 
 - 📸 **Responsive Bildergalerie** mit modernem Grid-Layout
 - 🔍 **Lightbox-Funktion** für Vollbildansicht
-- 🎯 **Filterung** nach Orten und Sortierung nach Datum/Titel
+- 🎯 **Smart Filtering** nach Kategorien, Orten und intelligenter Suche
 - 📱 **Mobile-First Design** - funktioniert auf allen Geräten
 - ⌨️ **Keyboard Navigation** (Pfeiltasten, ESC)
 - 🎨 **Moderne UI** mit Glasmorphism-Effekten
-- 📍 **Geo-Tagging** für Ortsangaben
+- 📍 **GPS-Geotagging** mit weltweiter Ortserkennung
 - 📅 **Chronologische Darstellung** der Urlaubsmomente
-- 🌍 **Intelligente GPS-Ortserkennung** - NEU!
+- 💾 **Persistente Speicherung** - Bilder bleiben dauerhaft gespeichert
+- 📦 **Backup-Export** für Datensicherung
+- 🤖 **3 Upload-Modi:** Auto, Manuell, Bulk
+
+## 💾 Persistente Speicherung - Erweitert!
+
+### 🔒 **Deine Bilder bleiben für immer gespeichert!**
+
+**Dual-Storage System:**
+- **💨 Lokal (Schnell):** Browser localStorage für sofortige Verfügbarkeit
+- **☁️ Permanent (Über alle Geräte):** GitHub API für weltweiten Zugriff
+
+### Lokale Speicherung:
+- **Auto-Load:** Bei jedem Besuch werden deine Fotos automatisch geladen
+- **Backup-Export:** Download als JSON-Datei für Sicherung
+- **Reset-Funktion:** Zurück zur ursprünglichen Galerie wenn gewünscht
+- **Privacy-First:** Alle Daten bleiben lokal auf deinem Gerät
+
+### Permanente Speicherung (GitHub Upload):
+- **Cross-Device:** Zugriff von jedem Gerät
+- **CDN-optimiert:** Schnelle Ladezeiten weltweit
+- **Netlify Integration:** Automatische Deploys nach Upload
+- **Enterprise-Security:** GitHub's sichere Infrastruktur
+
+```javascript
+// Automatische Speicherung bei Upload
+localStorage.setItem('costa-rica-photos', JSON.stringify(photos))
+
+// GitHub Upload für permanente Speicherung
+await uploadImage(file, category, location)
+```
+
+**Setup:** Siehe [GitHub Upload Setup Guide](GITHUB-UPLOAD-SETUP.md)
+
+## 📤 Smart Photo Uploader - Komplett überarbeitet!
+
+### 🚀 **3 Intelligente Upload-Modi:**
+
+#### **🎯 Smart Upload (Auto)**
+- GPS erkennt automatisch Ort & Kategorie
+- KI-basierte Kategorisierung
+- Minimaler Benutzereingriff
+- Perfekt für Handy-Fotos mit GPS
+
+#### **🎛️ Manueller Modus**
+- Vollständige Kontrolle über alle Einstellungen
+- Erweiterte Optionen verfügbar
+- Ideal für präzise Kategorisierung
+- Benutzerdefinierte Ortsangaben
+
+#### **📦 Bulk Upload**
+- Viele Bilder, gleiche Einstellungen
+- Schnell-Kategorisierung für alle Fotos
+- Perfekt für Foto-Serien vom gleichen Ort
+- Ein-Klick-Kategoriewechsel
+
+### 🎨 **Interaktive Features:**
+- **Farbkodierte Kategorien:** Jede Kategorie hat eigene Farbe
+- **Hover-Previews:** Foto-Infos beim Darüberfahren
+- **Live GPS-Analyse:** Echtzeitfeedback während Upload
+- **Smart Drop Zone:** Adaptiert sich an den aktuellen Modus
 
 ## 🌍 GPS-Geotagging System
 

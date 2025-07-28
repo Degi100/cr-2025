@@ -1,12 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { extractGPSFromImage, findNearestLocation, suggestCategory } from '../utils/geotagging.js'
-import { useGitHubUpload } from '../utils/github-upload.js'
 
 const emit = defineEmits(['photos-added'])
-
-// GitHub Upload Integration
-const { uploadImage, isUploading, uploadProgress, uploadError, isConfigured, configError } = useGitHubUpload()
 
 const newPhotos = ref([])
 const currentCategory = ref('strand')
@@ -16,7 +12,6 @@ const processingGPS = ref(false)
 const unknownLocationPhotos = ref([])
 const showAdvanced = ref(false)
 const uploadMode = ref('auto') // 'auto', 'manual', 'bulk'
-const permanentStorage = ref(true) // Neue Option für GitHub Upload
 
 const categories = [
   { value: 'strand', label: '🏖️ Strand', color: '#FF6B6B', count: 0 },
@@ -82,7 +77,7 @@ const processFiles = async (files) => {
 }
 
 const processImageWithGPS = async (file, index) => {
-  return new Promise(async (resolve) => {
+  return new Promise((resolve) => {
     const reader = new FileReader()
     reader.onload = async (e) => {
       let finalLocation = currentLocation.value
@@ -118,31 +113,7 @@ const processImageWithGPS = async (file, index) => {
         fileName: file.name,
         gpsData: gpsData,
         locationResult: locationResult,
-        isGpsDetected: !!gpsData,
-        permanent: false,
-        githubUrl: null,
-        uploading: false
-      }
-      
-      // GitHub Upload wenn permanent storage aktiviert
-      if (permanentStorage.value) {
-        try {
-          photo.uploading = true
-          console.log(`☁️ Lade ${photo.title} zu GitHub hoch...`)
-          
-          const githubUrl = await uploadImage(file, finalCategory, finalLocation)
-          if (githubUrl) {
-            photo.githubUrl = githubUrl
-            photo.permanent = true
-            photo.url = githubUrl // GitHub URL als primary URL verwenden
-            console.log(`✅ GitHub Upload erfolgreich: ${githubUrl}`)
-          }
-        } catch (error) {
-          console.warn(`⚠️ GitHub Upload fehlgeschlagen für ${photo.title}:`, error)
-          photo.permanent = false
-        } finally {
-          photo.uploading = false
-        }
+        isGpsDetected: !!gpsData
       }
       
       newPhotos.value.push(photo)
@@ -245,65 +216,6 @@ const getCategoryLabel = (categoryValue) => {
             <div class="mode-desc">{{ mode.desc }}</div>
           </div>
         </button>
-      </div>
-    </div>
-
-    <!-- GitHub Upload Optionen -->
-    <div v-if="uploadMode !== 'auto' || showAdvanced" class="storage-options">
-      <div class="storage-header">
-        <h3>💾 Speicher-Optionen</h3>
-        <span class="storage-info">Wähle wie deine Bilder gespeichert werden</span>
-      </div>
-      
-      <div class="storage-modes">
-        <label class="storage-option" :class="{ active: !permanentStorage }">
-          <input 
-            type="radio" 
-            :value="false" 
-            v-model="permanentStorage"
-            name="storage-mode"
-          >
-          <div class="option-content">
-            <span class="option-icon">💨</span>
-            <div class="option-info">
-              <div class="option-title">Lokal (Schnell)</div>
-              <div class="option-desc">Nur in diesem Browser</div>
-            </div>
-          </div>
-        </label>
-        
-        <label class="storage-option" :class="{ active: permanentStorage, disabled: !isConfigured }">
-          <input 
-            type="radio" 
-            :value="true" 
-            v-model="permanentStorage"
-            name="storage-mode"
-            :disabled="!isConfigured"
-          >
-          <div class="option-content">
-            <span class="option-icon">☁️</span>
-            <div class="option-info">
-              <div class="option-title">Permanent</div>
-              <div class="option-desc">
-                {{ isConfigured ? 'Über alle Geräte' : 'GitHub nicht konfiguriert' }}
-              </div>
-            </div>
-          </div>
-          <div v-if="isUploading" class="upload-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: uploadProgress + '%' }"></div>
-            </div>
-            <span class="progress-text">{{ uploadProgress }}%</span>
-          </div>
-        </label>
-      </div>
-      
-      <div v-if="uploadError || !isConfigured" class="upload-error">
-        <span v-if="!isConfigured">⚙️ {{ configError }}</span>
-        <span v-else>⚠️ Upload Fehler: {{ uploadError }}</span>
-        <div v-if="!isConfigured" class="config-hint">
-          Siehe <code>.env.example</code> für GitHub Token Setup
-        </div>
       </div>
     </div>
 
@@ -415,18 +327,6 @@ const getCategoryLabel = (categoryValue) => {
           <div v-for="(photo, index) in newPhotos" :key="photo.id" class="preview-card">
             <img :src="photo.thumbnail" :alt="photo.title" class="preview-image">
             
-            <!-- Upload Status Overlay -->
-            <div v-if="photo.uploading" class="upload-overlay">
-              <div class="upload-spinner"></div>
-              <span class="upload-status">☁️ Hochladen...</span>
-            </div>
-            
-            <!-- Storage Status Badge -->
-            <div class="storage-badge" :class="{ permanent: photo.permanent, local: !photo.permanent }">
-              <span v-if="photo.permanent">☁️</span>
-              <span v-else>💨</span>
-            </div>
-            
             <div class="card-overlay">
               <button @click="removePhoto(index)" class="remove-btn">❌</button>
               
@@ -438,8 +338,6 @@ const getCategoryLabel = (categoryValue) => {
                     {{ getCategoryLabel(photo.category) }}
                   </span>
                   <span v-if="photo.isGpsDetected" class="gps-tag">🎯 GPS</span>
-                  <span v-if="photo.permanent" class="storage-tag permanent">☁️ Permanent</span>
-                  <span v-else class="storage-tag local">💨 Lokal</span>
                 </div>
               </div>
             </div>
@@ -820,173 +718,6 @@ const getCategoryLabel = (categoryValue) => {
   font-size: 0.9rem;
 }
 
-/* Storage Optionen */
-.storage-options {
-  background: linear-gradient(135deg, rgba(138, 43, 226, 0.05), rgba(30, 144, 255, 0.05));
-  border: 2px solid rgba(138, 43, 226, 0.1);
-  border-radius: 12px;
-  padding: 1.2rem;
-  margin-bottom: 1rem;
-}
-
-.storage-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 1rem;
-}
-
-.storage-header h3 {
-  margin: 0;
-  color: #6a1b9a;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.storage-info {
-  color: #666;
-  font-size: 0.85rem;
-}
-
-.storage-modes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8rem;
-}
-
-.storage-option {
-  position: relative;
-  background: white;
-  border: 2px solid #e1e5e9;
-  border-radius: 10px;
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.storage-option:hover {
-  border-color: #8a2be2;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.1);
-}
-
-.storage-option.active {
-  border-color: #8a2be2;
-  background: linear-gradient(135deg, rgba(138, 43, 226, 0.08), rgba(30, 144, 255, 0.05));
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.15);
-}
-
-.storage-option.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.storage-option.disabled .option-desc {
-  color: #999;
-  font-style: italic;
-}
-
-.storage-option input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.option-content {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.option-icon {
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: rgba(138, 43, 226, 0.1);
-  border-radius: 8px;
-}
-
-.storage-option.active .option-icon {
-  background: rgba(138, 43, 226, 0.2);
-  transform: scale(1.1);
-}
-
-.option-info {
-  flex: 1;
-}
-
-.option-title {
-  font-weight: 600;
-  color: #333;
-  font-size: 0.9rem;
-  margin-bottom: 0.2rem;
-}
-
-.option-desc {
-  color: #666;
-  font-size: 0.8rem;
-}
-
-.upload-progress {
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 6px;
-  background: rgba(138, 43, 226, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #8a2be2, #1e90ff);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #8a2be2;
-  min-width: 35px;
-}
-
-.upload-error {
-  background: rgba(244, 67, 54, 0.1);
-  border: 1px solid rgba(244, 67, 54, 0.3);
-  color: #d32f2f;
-  padding: 0.8rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  margin-top: 0.8rem;
-}
-
-.config-hint {
-  margin-top: 0.4rem;
-  font-size: 0.75rem;
-  color: #666;
-}
-
-.config-hint code {
-  background: rgba(0, 0, 0, 0.1);
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  font-family: monospace;
-}
-
 .location-input {
   padding: 0.6rem;
   border: 2px solid #e1e5e9;
@@ -1167,87 +898,6 @@ const getCategoryLabel = (categoryValue) => {
   background: rgba(76, 175, 80, 0.2);
   color: #4CAF50;
   font-weight: 600;
-}
-
-.storage-tag {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 8px;
-  display: inline-block;
-  font-weight: 500;
-}
-
-.storage-tag.permanent {
-  background: rgba(138, 43, 226, 0.2);
-  color: #8a2be2;
-}
-
-.storage-tag.local {
-  background: rgba(255, 152, 0, 0.2);
-  color: #ff9800;
-}
-
-/* Upload Status */
-.upload-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  border-radius: 10px;
-  z-index: 10;
-}
-
-.upload-spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid #8a2be2;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 0.5rem;
-}
-
-.upload-status {
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.storage-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  z-index: 5;
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.storage-badge.permanent {
-  background: rgba(138, 43, 226, 0.9);
-  color: white;
-}
-
-.storage-badge.local {
-  background: rgba(255, 152, 0, 0.9);
-  color: white;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* Animationen */
