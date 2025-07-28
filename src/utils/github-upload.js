@@ -169,8 +169,9 @@ export class GitHubUploadService {
    * Permanente URL für hochgeladenes Bild generieren
    */
   static getPhotoUrl(fileName) {
-    // Netlify URL mit CDN - Diese Version hat funktioniert
-    return `https://cr-2025.netlify.app/uploads/${fileName}`
+    // Temporäre lokale URL verwenden, die auch nach Reload funktioniert
+    // Die Base64-Version des Bildes wird beim Upload in localStorage gespeichert
+    return `/uploads/${fileName}`;
   }
   
   /**
