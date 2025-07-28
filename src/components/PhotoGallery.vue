@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import PhotoCard from './PhotoCard.vue'
 import Lightbox from './Lightbox.vue'
 import PhotoUploader from './PhotoUploader.vue'
@@ -285,12 +285,18 @@ const toggleUploader = () => {
 }
 
 const addPhotos = (newPhotos) => {
+  console.log(`📥 PhotoGallery: Empfange ${newPhotos.length} neue Fotos`)
+  console.log('🔍 Aktuelle Galerie hat', photos.value.length, 'Fotos')
+  
   // Neue Fotos zur bestehenden Liste hinzufügen
   const maxId = Math.max(...photos.value.map(p => p.id), 0)
   newPhotos.forEach((photo, index) => {
     photo.id = maxId + index + 1
     photos.value.push(photo)
+    console.log(`➕ Foto hinzugefügt: ${photo.title} (ID: ${photo.id})`)
   })
+  
+  console.log(`📊 Galerie hat jetzt ${photos.value.length} Fotos`)
   
   // Sofort speichern nach dem Hinzufügen
   savePhotosToStorage()
@@ -298,6 +304,7 @@ const addPhotos = (newPhotos) => {
   showUploader.value = false
   
   // Erfolgsbenachrichtigung mit Speicher-Info
+  console.log('✅ Fotos erfolgreich zur Galerie hinzugefügt!')
   alert(`🎉 ${newPhotos.length} Foto${newPhotos.length !== 1 ? 's' : ''} erfolgreich hinzugefügt und gespeichert! 💾`)
 }
 
@@ -391,6 +398,12 @@ const getStorageInfo = () => {
     return { photoCount: 0, storageUsed: 0, storageLimit: 5120 }
   }
 }
+
+// Component Mount - Lade gespeicherte Fotos
+onMounted(() => {
+  console.log('🚀 PhotoGallery mounted - lade Fotos aus localStorage...')
+  loadPhotosFromStorage()
+})
 </script>
 
 <template>
