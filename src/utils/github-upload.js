@@ -169,8 +169,10 @@ export class GitHubUploadService {
    * Permanente URL für hochgeladenes Bild generieren
    */
   static getPhotoUrl(fileName) {
-    // Netlify URL mit CDN
-    return `https://cr-2025.netlify.app/uploads/${fileName}`
+    // Absolute URL für GitHub-gehostete Bilder verwenden
+    // Dies sorgt dafür, dass Bilder nach dem Aktualisieren bestehen bleiben
+    const baseUrl = window.location.origin
+    return `${baseUrl}/uploads/${fileName}`
   }
   
   /**
@@ -249,9 +251,9 @@ export function useGitHubUpload() {
       clearInterval(progressInterval)
       uploadProgress.value = 100
 
-      // Immer Netlify-URL zurückgeben
-      const fileName = GitHubUploadService.generateFileName(imageFile, photoMetadata)
-      return GitHubUploadService.getPhotoUrl(fileName)
+      // Die generierte URL zurückgeben
+      // Wir verwenden das Ergebnis des Uploads direkt
+      return result.url
 
     } catch (error) {
       console.error('GitHub Upload Error:', error)
