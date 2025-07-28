@@ -223,11 +223,11 @@ export function useGitHubUpload() {
       uploadError.value = configError.value
       throw new Error(configError.value)
     }
-    
+
     isUploading.value = true
     uploadError.value = null
     uploadProgress.value = 0
-    
+
     try {
       // Simuliere Progress für UX
       const progressInterval = setInterval(() => {
@@ -235,7 +235,7 @@ export function useGitHubUpload() {
           uploadProgress.value += 10
         }
       }, 200)
-      
+
       // Foto-Metadaten für GitHub Upload vorbereiten
       const photoMetadata = {
         title: imageFile.name.replace(/\.[^/.]+$/, ""),
@@ -243,14 +243,16 @@ export function useGitHubUpload() {
         location,
         date: new Date().toISOString().split('T')[0]
       }
-      
+
       const result = await GitHubUploadService.uploadImage(imageFile, photoMetadata)
-      
+
       clearInterval(progressInterval)
       uploadProgress.value = 100
-      
-      return result.download_url || result.html_url
-      
+
+      // Immer Netlify-URL zurückgeben
+      const fileName = GitHubUploadService.generateFileName(imageFile, photoMetadata)
+      return GitHubUploadService.getPhotoUrl(fileName)
+
     } catch (error) {
       console.error('GitHub Upload Error:', error)
       uploadError.value = error.message
